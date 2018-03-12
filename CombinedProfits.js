@@ -25,17 +25,21 @@
 
     /* these are module specific variables: */
 
-    let file;                           // Here we keep the history records to be ploted every time the Draw() function is called by the AAWebPlatform.
-    let history = [];                   // This is where the history records are stored before plotting.
+    let competition;
+
+    let files;                           // Here we keep the history records to be ploted every time the Draw() function is called by the AAWebPlatform.
+    let histories = new Map;                   // This is where the history records are stored before plotting.
 
     return thisObject;
 
-    function initialize(pStorage, pExchange, pMarket, pDatetime, pTimePeriod, callBackFunction) {
+    function initialize(pCompetition, pStorage, pDatetime, pTimePeriod, callBackFunction) {
+
+        competition = pCompetition;
 
         datetime = pDatetime;
         timePeriod = pTimePeriod;
 
-        file = pStorage.file.getFile();
+        files = pStorage.files;
 
         recalculate();
         recalculateScale();
@@ -84,7 +88,7 @@
 
     function recalculate() {    
 
-        if (file === undefined) { return; }
+        if (files === undefined) { return; }
 
         /*
 
@@ -93,37 +97,45 @@
 
         */
 
-        history = [];
-
         let oneMin = 60000;
         let step = timePeriod / oneMin;
 
-        for (let i = 0; i < file.length; i = i + step) {
+        for (let j = 0; j < competition.participants.length; j++) {
 
-            let newHistoryRecord = {
+            let key = competition.participants[j].devTeam + "-" + competition.participants[j].bot;
 
-                date: Math.trunc(file[i][0] / 60000) * 60000 + 30000,
-                buyAvgRate: file[i][1],    
-                sellAvgRate: file[i][2], 
-                marketRate: file[i][3],
-                newPositions: file[i][4],
-                newTrades: file[i][5],
-                movedPositions: file[i][6],
-                profitsAssetA: file[i][7],
-                profitsAssetB: file[i][8],
-                combinedProfitsA: file[i][9],
-                combinedProfitsB: file[i][10]
-            };
+            let file = files.get(key).getFile();
 
-            history.push(newHistoryRecord);
+            let history = [];
+
+            for (let i = 0; i < file.length; i = i + step) {
+
+                let newHistoryRecord = {
+
+                    date: Math.trunc(file[i][0] / 60000) * 60000 + 30000,
+                    buyAvgRate: file[i][1],
+                    sellAvgRate: file[i][2],
+                    marketRate: file[i][3],
+                    newPositions: file[i][4],
+                    newTrades: file[i][5],
+                    movedPositions: file[i][6],
+                    profitsAssetA: file[i][7],
+                    profitsAssetB: file[i][8],
+                    combinedProfitsA: file[i][9],
+                    combinedProfitsB: file[i][10]
+                };
+
+                history.push(newHistoryRecord);
+            }
+
+            histories.set(key, history);
         }
-
         thisObject.container.eventHandler.raiseEvent("History Changed", history);
     }
 
     function recalculateScale() {
 
-        if (file === undefined) { return; } // We need the market file to be loaded to make the calculation.
+        if (files === undefined) { return; } // We need the market file to be loaded to make the calculation.
 
         if (timeLineCoordinateSystem.maxValue > 0) { return; } // Already calculated.
 
@@ -132,11 +144,15 @@
             y: 0
         };
 
+
+        let maxYValue = getMaxValue();
+
+        if (maxYValue < 10) { maxYValue = 10;}
+
         let maxValue = {
             x: MAX_PLOTABLE_DATE.valueOf(),
-            y: nextPorwerOf10(getMaxRate())
+            y: nextPorwerOf10(maxYValue)
         };
-
 
         timeLineCoordinateSystem.initialize(
             minValue,
@@ -145,79 +161,96 @@
             thisObject.container.frame.height
         );
 
-        function getMaxRate() {
+        function getMaxValue() {
 
             let maxValue = 0;
 
-            for (let i = 0; i < file.length; i++) {
+            for (let j = 0; j < competition.participants.length; j++) {
 
-                let currentMax = file[i][10] * 2;    
+                let key = competition.participants[j].devTeam + "-" + competition.participants[j].bot;
 
-                if (maxValue < currentMax) {
-                    maxValue = currentMax;
+                let file = files.get(key).getFile();
+
+                for (let i = 0; i < file.length; i++) {
+
+                    let currentMax = file[i][10] * 2;
+
+                    if (maxValue < currentMax) {
+                        maxValue = currentMax;
+                    }
                 }
             }
 
             return maxValue;
-
         }
-
     }
 
     function plotChart() {
 
-        for (let i = 0; i < history.length; i++) {
+        for (let j = 0; j < competition.participants.length; j++) {
 
-            record = history[i];
+            let key = competition.participants[j].devTeam + "-" + competition.participants[j].bot;
 
-            let point = {
-                x: record.date,
-                y: record.combinedProfitsB + thisObject.frame.height / 2
-            };
+            let history = histories.get(key);
 
-            point = timeLineCoordinateSystem.transformThisPoint(point);
-            point = transformThisPoint(point, thisObject.container);
+            for (let i = 0; i < history.length; i++) {
 
-            if (point.x < viewPort.visibleArea.bottomLeft.x || point.x > viewPort.visibleArea.bottomRight.x) { continue;}
+                record = history[i];
 
-            point = viewPort.fitIntoVisibleArea(point);
+                let point = {
+                    x: record.date,
+                    y: record.combinedProfitsB 
+                };
 
-            let isCurrentRecord = false;
+                point = timeLineCoordinateSystem.transformThisPoint(point);
 
-            if (datetime !== undefined) {
-                let dateValue = datetime.valueOf();
-                if (dateValue >= record.date - timePeriod / 2 && dateValue <= record.date + timePeriod / 2 - 1) {
-                    isCurrentRecord = true;
-                } 
-            } 
+                point.y = point.y - thisObject.container.frame.height / 2;
 
-            let opacity = '0.2';
+                point = transformThisPoint(point, thisObject.container);
 
-            let radius = 3;
+                
 
-            browserCanvasContext.lineWidth = 1;
+                if (point.x < viewPort.visibleArea.bottomLeft.x || point.x > viewPort.visibleArea.bottomRight.x) { continue; }
 
-            /* Circles */
+                point = viewPort.fitIntoVisibleArea(point);
 
-            browserCanvasContext.beginPath();
+                let isCurrentRecord = false;
 
-            browserCanvasContext.strokeStyle = 'rgba(27, 105, 7, ' + opacity + ')';
+                if (datetime !== undefined) {
+                    let dateValue = datetime.valueOf();
+                    if (dateValue >= record.date - timePeriod / 2 && dateValue <= record.date + timePeriod / 2 - 1) {
+                        isCurrentRecord = true;
+                    }
+                }
 
-            if (isCurrentRecord === false) {
-                browserCanvasContext.fillStyle = 'rgba(64, 217, 26, ' + opacity + ')';
-            } else {
-                browserCanvasContext.fillStyle = 'rgba(255, 233, 31, ' + opacity + ')';  /* highlight the current record */
+                let opacity = '0.2';
+
+                let radius = 3;
+
+                browserCanvasContext.lineWidth = 1;
+
+                /* Circles */
+
+                browserCanvasContext.beginPath();
+
+                browserCanvasContext.strokeStyle = 'rgba(27, 105, 7, ' + opacity + ')';
+
+                if (isCurrentRecord === false) {
+                    browserCanvasContext.fillStyle = 'rgba(64, 217, 26, ' + opacity + ')';
+                } else {
+                    browserCanvasContext.fillStyle = 'rgba(255, 233, 31, ' + opacity + ')';  /* highlight the current record */
+                }
+
+                browserCanvasContext.arc(point.x, point.y, radius, 0, Math.PI * 2, true);
+                browserCanvasContext.closePath();
+
+                if (point.x < viewPort.visibleArea.topLeft.x + 50 || point.x > viewPort.visibleArea.bottomRight.x - 50) {/*we leave this history without fill. */ } else {
+                    browserCanvasContext.fill();
+                }
+
+                browserCanvasContext.stroke();
+
             }
-
-            browserCanvasContext.arc(point.x, point.y, radius, 0, Math.PI * 2, true);
-            browserCanvasContext.closePath();
-
-            if (point.x < viewPort.visibleArea.topLeft.x + 50 || point.x > viewPort.visibleArea.bottomRight.x - 50) {/*we leave this history without fill. */ } else {
-                browserCanvasContext.fill();
-            }
-
-            browserCanvasContext.stroke();
-
         }
     }
 
