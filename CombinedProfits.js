@@ -189,7 +189,7 @@
     function plotStartFinishLines() {
 
         let startDatetime = new Date(competition.startDatetime);
-        let endDatetime = new Date(competition.startDatetime);
+        let finishDatetime = new Date(competition.startDatetime);
 
         let startPointDown = {
             x: startDatetime.valueOf(),
@@ -219,27 +219,27 @@
         browserCanvasContext.lineWidth = 1;
         browserCanvasContext.stroke();
 
-        let endPointDown = {
-            x: endDatetime.valueOf(),
+        let finishPointDown = {
+            x: finishDatetime.valueOf(),
             y: 0
         };
 
-        let endPointUp = {
-            x: endDatetime.valueOf(),
+        let finishPointUp = {
+            x: finishDatetime.valueOf(),
             y: 0
         };
 
-        endPointDown = timeLineCoordinateSystem.transformThisPoint(endPointDown);
-        endPointDown = transformThisPoint(endPointDown, thisObject.container);
+        finishPointDown = timeLineCoordinateSystem.transformThisPoint(finishPointDown);
+        finishPointDown = transformThisPoint(finishPointDown, thisObject.container);
 
-        endPointUp = timeLineCoordinateSystem.transformThisPoint(endPointUp);
-        endPointUp.y = endPointUp.y - thisObject.container.frame.height;
-        endPointUp = transformThisPoint(endPointUp, thisObject.container);
+        finishPointUp = timeLineCoordinateSystem.transformThisPoint(finishPointUp);
+        finishPointUp.y = finishPointUp.y - thisObject.container.frame.height;
+        finishPointUp = transformThisPoint(finishPointUp, thisObject.container);
 
         browserCanvasContext.beginPath();
 
-        browserCanvasContext.moveTo(endPointDown.x, endPointDown.y);
-        browserCanvasContext.lineTo(endPointUp.x, candlePointUp.y);
+        browserCanvasContext.moveTo(finishPointDown.x, finishPointDown.y);
+        browserCanvasContext.lineTo(finishPointUp.x, candlePointUp.y);
 
         browserCanvasContext.closePath();
 
