@@ -82,6 +82,7 @@
 
     function draw() {
 
+        plotStartFinishLines();
         plotChart();
 
     }
@@ -183,6 +184,69 @@
 
             return maxValue;
         }
+    }
+
+    function plotStartFinishLines() {
+
+        let startDatetime = new Date(competition.startDatetime);
+        let endDatetime = new Date(competition.startDatetime);
+
+        let startPointDown = {
+            x: startDatetime.valueOf(),
+            y: 0
+        };
+
+        let startPointUp = {
+            x: startDatetime.valueOf(),
+            y: 0
+        };
+
+        startPointDown = timeLineCoordinateSystem.transformThisPoint(startPointDown);
+        startPointDown = transformThisPoint(startPointDown, thisObject.container);
+
+        startPointUp = timeLineCoordinateSystem.transformThisPoint(startPointUp);
+        startPointUp.y = startPointUp.y - thisObject.container.frame.height;
+        startPointUp = transformThisPoint(startPointUp, thisObject.container);
+
+        browserCanvasContext.beginPath();
+
+        browserCanvasContext.moveTo(startPointDown.x, startPointDown.y);
+        browserCanvasContext.lineTo(startPointUp.x, candlePointUp.y);
+
+        browserCanvasContext.closePath();
+
+        browserCanvasContext.strokeStyle = 'rgba(27, 105, 7, 1)'; 
+        browserCanvasContext.lineWidth = 1;
+        browserCanvasContext.stroke();
+
+        let endPointDown = {
+            x: endDatetime.valueOf(),
+            y: 0
+        };
+
+        let endPointUp = {
+            x: endDatetime.valueOf(),
+            y: 0
+        };
+
+        endPointDown = timeLineCoordinateSystem.transformThisPoint(endPointDown);
+        endPointDown = transformThisPoint(endPointDown, thisObject.container);
+
+        endPointUp = timeLineCoordinateSystem.transformThisPoint(endPointUp);
+        endPointUp.y = endPointUp.y - thisObject.container.frame.height;
+        endPointUp = transformThisPoint(endPointUp, thisObject.container);
+
+        browserCanvasContext.beginPath();
+
+        browserCanvasContext.moveTo(endPointDown.x, endPointDown.y);
+        browserCanvasContext.lineTo(endPointUp.x, candlePointUp.y);
+
+        browserCanvasContext.closePath();
+
+        browserCanvasContext.strokeStyle = 'rgba(27, 105, 7, 1)';
+        browserCanvasContext.lineWidth = 1;
+        browserCanvasContext.stroke();
+
     }
 
     function plotChart() {
