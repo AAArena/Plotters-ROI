@@ -189,7 +189,7 @@
     function plotStartFinishLines() {
 
         let startDatetime = new Date(competition.startDatetime);
-        let finishDatetime = new Date(competition.startDatetime);
+        let finishDatetime = new Date(competition.finishDatetime);
 
         let startPointDown = {
             x: startDatetime.valueOf(),
@@ -208,45 +208,92 @@
         startPointUp.y = startPointUp.y - thisObject.container.frame.height;
         startPointUp = transformThisPoint(startPointUp, thisObject.container);
 
-        browserCanvasContext.beginPath();
+        if (startPointUp.x > viewPort.visibleArea.bottomLeft.x && startPointUp.x < viewPort.visibleArea.bottomRight.x)  {
 
-        browserCanvasContext.moveTo(startPointDown.x, startPointDown.y);
-        browserCanvasContext.lineTo(startPointUp.x, candlePointUp.y);
+            startPointDown = viewPort.fitIntoVisibleArea(startPointDown);
+            startPointUp = viewPort.fitIntoVisibleArea(startPointUp);
 
-        browserCanvasContext.closePath();
+            browserCanvasContext.beginPath();
 
-        browserCanvasContext.strokeStyle = 'rgba(27, 105, 7, 1)'; 
-        browserCanvasContext.lineWidth = 1;
-        browserCanvasContext.stroke();
+            browserCanvasContext.moveTo(startPointDown.x, startPointDown.y);
+            browserCanvasContext.lineTo(startPointUp.x, startPointUp.y);
 
-        let finishPointDown = {
-            x: finishDatetime.valueOf(),
-            y: 0
-        };
+            browserCanvasContext.closePath();
 
-        let finishPointUp = {
-            x: finishDatetime.valueOf(),
-            y: 0
-        };
+            browserCanvasContext.strokeStyle = 'rgba(100, 10, 10, 0.5)';
+            browserCanvasContext.lineWidth = 2;
+            browserCanvasContext.stroke();
 
-        finishPointDown = timeLineCoordinateSystem.transformThisPoint(finishPointDown);
-        finishPointDown = transformThisPoint(finishPointDown, thisObject.container);
+        }
 
-        finishPointUp = timeLineCoordinateSystem.transformThisPoint(finishPointUp);
-        finishPointUp.y = finishPointUp.y - thisObject.container.frame.height;
-        finishPointUp = transformThisPoint(finishPointUp, thisObject.container);
 
-        browserCanvasContext.beginPath();
+        /* Here we draw the finish line. */
 
-        browserCanvasContext.moveTo(finishPointDown.x, finishPointDown.y);
-        browserCanvasContext.lineTo(finishPointUp.x, candlePointUp.y);
+        const TOTAL_SQUARES_TALL = ONE_DAY_IN_MILISECONDS / timePeriod * 10;
+        const SQUARE_SIDE = thisObject.container.frame.height / TOTAL_SQUARES_TALL;
 
-        browserCanvasContext.closePath();
+        let paintThis = true;
 
-        browserCanvasContext.strokeStyle = 'rgba(27, 105, 7, 1)';
-        browserCanvasContext.lineWidth = 1;
-        browserCanvasContext.stroke();
+        for (i = 0; i < 3; i++) {
 
+            for (j = 0; j < TOTAL_SQUARES_TALL; j++) {
+
+                let finishPointDown = {
+                    x: finishDatetime.valueOf(),
+                    y: 0
+                };
+
+                let finishPointUp = {
+                    x: finishDatetime.valueOf(),
+                    y: 0
+                };
+
+                finishPointDown = timeLineCoordinateSystem.transformThisPoint(finishPointDown);
+
+                finishPointDown.x = finishPointDown.x + SQUARE_SIDE * i;
+                finishPointDown.y = finishPointDown.y - SQUARE_SIDE * j;
+
+                finishPointDown = transformThisPoint(finishPointDown, thisObject.container);
+
+                finishPointUp = timeLineCoordinateSystem.transformThisPoint(finishPointUp);
+
+                finishPointUp.x = finishPointUp.x + SQUARE_SIDE * i + SQUARE_SIDE;
+                finishPointUp.y = finishPointUp.y - SQUARE_SIDE * j - SQUARE_SIDE;
+
+                finishPointUp = transformThisPoint(finishPointUp, thisObject.container);
+
+                if (finishPointUp.x < viewPort.visibleArea.bottomLeft.x || finishPointDown.x > viewPort.visibleArea.bottomRight.x) { continue; }
+
+                finishPointDown = viewPort.fitIntoVisibleArea(finishPointDown);
+                finishPointUp = viewPort.fitIntoVisibleArea(finishPointUp);
+
+                browserCanvasContext.beginPath();
+
+                browserCanvasContext.moveTo(finishPointDown.x, finishPointDown.y);
+                browserCanvasContext.lineTo(finishPointUp.x, finishPointDown.y);
+                browserCanvasContext.lineTo(finishPointUp.x, finishPointUp.y);
+                browserCanvasContext.lineTo(finishPointDown.x, finishPointUp.y);
+
+                browserCanvasContext.closePath();
+
+                /*
+                browserCanvasContext.strokeStyle = 'rgba(100, 100, 100, 1)';
+                browserCanvasContext.lineWidth = 1;
+                browserCanvasContext.stroke();
+                */
+
+                if (paintThis === true) {
+
+                    browserCanvasContext.fillStyle = 'rgba(100, 100, 100, ' + (0.6 - i / 5) + ')';
+                    browserCanvasContext.fill();
+
+                }
+
+                if (paintThis === true) { paintThis = false; } else { paintThis = true;}
+            }
+
+            if (paintThis === true) { paintThis = false; } else { paintThis = true; }
+        }
     }
 
     function plotChart() {
