@@ -27,19 +27,17 @@
 
     let competition;
 
-    let files;                           // Here we keep the history records to be ploted every time the Draw() function is called by the AAWebPlatform.
-    let histories = new Map;                   // This is where the history records are stored before plotting.
+    let competitorsSequences;
 
     return thisObject;
 
     function initialize(pCompetition, pStorage, pDatetime, pTimePeriod, callBackFunction) {
 
         competition = pCompetition;
+        competitorsSequences = pStorage.competitorsSequences;
 
         datetime = pDatetime;
         timePeriod = pTimePeriod;
-
-        files = pStorage.files;
 
         recalculate();
         recalculateScale();
@@ -89,7 +87,7 @@
 
     function recalculate() {    
 
-        if (files === undefined) { return; }
+        if (competitorsSequences === undefined) { return; }
 
         /*
 
@@ -101,42 +99,59 @@
         let oneMin = 60000;
         let step = timePeriod / oneMin;
 
-        for (let j = 0; j < competition.participants.length; j++) {
+        for (let k = 0; k < competition.participants.length; k++) {
 
-            let key = competition.participants[j].devTeam + "-" + competition.participants[j].bot;
+            let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
 
-            let file = files.get(key).getFile();
+            competition.participants[k].plotElements = [];
 
-            let history = [];
+            let maxSequence = fileSequence.getFilesLoaded();
 
-            for (let i = 0; i < file.length; i = i + step) {
+            for (let j = 0; j < maxSequence; j++) {
 
-                let newHistoryRecord = {
+                let file = fileSequence.getFile(j);
 
-                    date: Math.trunc(file[i][0] / 60000) * 60000 + 30000,
-                    buyAvgRate: file[i][1],
-                    sellAvgRate: file[i][2],
-                    marketRate: file[i][3],
-                    newPositions: file[i][4],
-                    newTrades: file[i][5],
-                    movedPositions: file[i][6],
-                    profitsAssetA: file[i][7],
-                    profitsAssetB: file[i][8],
-                    combinedProfitsA: file[i][9],
-                    combinedProfitsB: file[i][10]
-                };
+                let oneMin = 60000;
+                let step = timePeriod / oneMin;
 
-                history.push(newHistoryRecord);
+                /* First the small balls */
+
+                for (let i = 0; i < file.length; i = i + step) {
+
+                    let newHistoryRecord = {
+
+                        date: Math.trunc(file[i][0] / 60000) * 60000 + 30000,
+                        buyAvgRate: file[i][1],
+                        sellAvgRate: file[i][2],
+
+                        lastSellRate: file[i][3],
+                        sellExecRate: file[i][4],
+                        lastBuyRate: file[i][5],
+                        buyExecRate: file[i][6],
+
+                        marketRate: file[i][7],
+                        newPositions: file[i][8],
+                        newTrades: file[i][9],
+                        movedPositions: file[i][10],
+                        profitsAssetA: file[i][11],
+                        profitsAssetB: file[i][12],
+                        combinedProfitsA: file[i][13],
+                        combinedProfitsB: file[i][14],
+
+                        messageRelevance: file[i][15],
+                        messageTitle: file[i][16],
+                        messageBody: file[i][17]
+                    };
+
+                    competition.participants[k].plotElements.push(newHistoryRecord);
+                }
             }
-
-            histories.set(key, history);
         }
-        thisObject.container.eventHandler.raiseEvent("History Changed", history);
     }
 
     function recalculateScale() {
 
-        if (files === undefined) { return; } // We need the market file to be loaded to make the calculation.
+        if (competitorsSequences === undefined) { return; } // We need the market file to be loaded to make the calculation.
 
         if (timeLineCoordinateSystem.maxValue > 0) { return; } // Already calculated.
 
@@ -145,15 +160,11 @@
             y: 0
         };
 
-
-        let maxYValue = getMaxValue();
-
-        if (maxYValue < 10) { maxYValue = 10;}
-
         let maxValue = {
             x: MAX_PLOTABLE_DATE.valueOf(),
-            y: nextPorwerOf10(maxYValue)
+            y: nextPorwerOf10(USDT_BTC_HTH)
         };
+
 
         timeLineCoordinateSystem.initialize(
             minValue,
@@ -161,29 +172,6 @@
             thisObject.container.frame.width,
             thisObject.container.frame.height
         );
-
-        function getMaxValue() {
-
-            let maxValue = 0;
-
-            for (let j = 0; j < competition.participants.length; j++) {
-
-                let key = competition.participants[j].devTeam + "-" + competition.participants[j].bot;
-
-                let file = files.get(key).getFile();
-
-                for (let i = 0; i < file.length; i++) {
-
-                    let currentMax = file[i][10] * 2;
-
-                    if (maxValue < currentMax) {
-                        maxValue = currentMax;
-                    }
-                }
-            }
-
-            return maxValue;
-        }
     }
 
     function plotStartFinishLines() {
@@ -298,15 +286,15 @@
 
     function plotChart() {
 
-        for (let j = 0; j < competition.participants.length; j++) {
+        for (let k = 0; k < competition.participants.length; k++) {
 
-            let key = competition.participants[j].devTeam + "-" + competition.participants[j].bot;
+            let key = competition.participants[k].devTeam + "-" + competition.participants[k].bot;
 
-            let history = histories.get(key);
+            let plotElements = competition.participants[k].plotElements;
 
-            for (let i = 0; i < history.length; i++) {
+            for (let i = 0; i < plotElements.length; i++) {
 
-                record = history[i];
+                record = plotElements[i];
 
                 let point = {
                     x: record.date,
@@ -318,8 +306,6 @@
                 point.y = point.y - thisObject.container.frame.height / 2;
 
                 point = transformThisPoint(point, thisObject.container);
-
-                
 
                 if (point.x < viewPort.visibleArea.bottomLeft.x || point.x > viewPort.visibleArea.bottomRight.x) { continue; }
 
@@ -363,14 +349,6 @@
 
             }
         }
-    }
-
-    function onZoomChanged(event) {
-
-    }
-
-    function onDragFinished() {
-
     }
 }
 
