@@ -41,7 +41,7 @@
 
         recalculate();
         recalculateScale();
-        callBackFunction();
+        callBackFunction(GLOBAL.DEFAULT_OK_RESPONSE);
 
     }
 
