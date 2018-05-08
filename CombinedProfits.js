@@ -288,9 +288,8 @@
 
         for (let k = 0; k < competition.participants.length; k++) {
 
-            let key = competition.participants[k].devTeam + "-" + competition.participants[k].bot;
-
-            let plotElements = competition.participants[k].plotElements;
+            let participant = competition.participants[k];
+            let plotElements = participant.plotElements;
 
             for (let i = 0; i < plotElements.length; i++) {
 
@@ -322,7 +321,7 @@
 
                 let opacity = '0.2';
 
-                let radius = 3;
+                let radius = 6;
 
                 browserCanvasContext.lineWidth = 1;
 
@@ -347,6 +346,24 @@
 
                 browserCanvasContext.stroke();
 
+                /* Image */
+
+                if (participant.profilePicture !== undefined) {
+
+                    let imageId = participant.devTeam + "." + participant.profilePicture;
+                    imageSize = 8;
+
+                    if (imageId !== undefined) {
+
+                        let image = document.getElementById(imageId);
+
+                        if (image !== null) {
+
+                            browserCanvasContext.drawImage(image, point.x - imageSize / 2, point.y - imageSize / 2, imageSize, imageSize);
+
+                        }
+                    }
+                }
             }
         }
     }
