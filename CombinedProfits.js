@@ -9,7 +9,8 @@
         getContainer: getContainer,
         setTimePeriod: setTimePeriod,
         setDatetime: setDatetime,
-        draw: draw
+        draw: draw,
+        payload: []
     };
 
     /* this is part of the module template */
@@ -41,8 +42,27 @@
 
         recalculate();
         recalculateScale();
-        callBackFunction(GLOBAL.DEFAULT_OK_RESPONSE);
 
+        /* Create the Payload structure */
+
+        for (let k = 0; k < competition.participants.length; k++) {
+
+            let participant = competition.participants[k];
+
+            let payload = {
+                profile: {
+                    position: {
+                        x: 0,
+                        y: 0
+                    },
+                    visible: false
+                }
+            }
+
+            thisObject.payload.push(payload);
+        }
+
+        callBackFunction(GLOBAL.DEFAULT_OK_RESPONSE);
     }
 
     function getContainer(point) {
@@ -288,6 +308,13 @@
 
         for (let k = 0; k < competition.participants.length; k++) {
 
+            let point = {
+                x: 0,
+                y: 0
+            };
+
+            let upLabel = "";
+
             let participant = competition.participants[k];
             let plotElements = participant.plotElements;
 
@@ -295,10 +322,12 @@
 
                 record = plotElements[i];
 
-                let point = {
+                point = {
                     x: record.date,
                     y: record.combinedProfitsB 
                 };
+
+                upLabel = "ROI: " + Math.trunc(record.combinedProfitsB * 10000) / 10000 + " %";
 
                 point = timeLineCoordinateSystem.transformThisPoint(point);
 
@@ -346,6 +375,10 @@
 
                 browserCanvasContext.stroke();
 
+                /* Since there is at least some point plotted, then the profile should be visible. */
+
+                thisObject.payload[k].profile.visible = true;
+
                 /* Image */
 
                 if (participant.profilePicture !== undefined) {
@@ -365,7 +398,19 @@
                     }
                 }
             }
+
+            /*
+ 
+            We replace the coordinate of the profile point so that whoever has a reference to it, gets the new position.
+            We will use the last point plotted on screen as the profilePoint.
+ 
+            */
+
+            thisObject.payload[k].profile.position.x = point.x;
+            thisObject.payload[k].profile.position.y = point.y;
+            thisObject.payload[k].profile.upLabel = upLabel;
         }
+
     }
 }
 
