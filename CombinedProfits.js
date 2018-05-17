@@ -30,6 +30,8 @@
 
     let competitorsSequences;
 
+    let updatedFilesEventsReceived = 0;
+
     return thisObject;
 
     function initialize(pCompetition, pStorage, pDatetime, pTimePeriod, callBackFunction) {
@@ -62,6 +64,14 @@
             thisObject.payload.push(payload);
         }
 
+        for (let k = 0; k < competition.participants.length; k++) {
+
+            let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
+
+            fileSequence.eventHandler.listenToEvent("Files Updated", onFilesUpdated); // Only the first sequence is supported right now.
+
+        }
+
         callBackFunction(GLOBAL.DEFAULT_OK_RESPONSE);
     }
 
@@ -82,6 +92,17 @@
             return undefined;
         }
 
+    }
+
+    function onFilesUpdated() {
+
+        updatedFilesEventsReceived++;
+
+        if (updatedFilesEventsReceived === competition.participants.length) {
+
+            recalculate();
+            updatedFilesEventsReceived = 0;
+        }
     }
 
     function setTimePeriod(pTimePeriod) {
