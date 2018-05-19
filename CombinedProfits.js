@@ -45,6 +45,8 @@
         recalculate();
         recalculateScale();
 
+        viewPort.eventHandler.listenToEvent("Offset Changed", onOffsetChanged);
+
         /* Create the Payload structure */
 
         for (let k = 0; k < competition.participants.length; k++) {
@@ -123,6 +125,15 @@
 
         plotStartFinishLines();
         plotChart();
+
+    }
+
+    function onOffsetChanged() {
+
+        if (Math.random() * 100 > 95) {
+
+            recalculate()
+        };
 
     }
 
