@@ -148,9 +148,6 @@
 
         */
 
-        let oneMin = 60000;
-        let step = timePeriod / oneMin;
-
         for (let k = 0; k < competition.participants.length; k++) {
 
             let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
@@ -163,12 +160,9 @@
 
                 let file = fileSequence.getFile(j);
 
-                let oneMin = 60000;
-                let step = timePeriod / oneMin;
-
                 /* First the small balls */
 
-                for (let i = 0; i < file.length; i = i + step) {
+                for (let i = 0; i < file.length; i++) {
 
                     let newHistoryRecord = {
 
