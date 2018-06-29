@@ -1,5 +1,12 @@
 ﻿function newAAArenaPlottersROICombinedProfits() {
 
+    const MODULE_NAME = "AAArena Plotters ROI Combined Profits";
+    const INFO_LOG = false;
+    const ERROR_LOG = true;
+    const INTENSIVE_LOG = false;
+    const logger = newWebDebugLog();
+    logger.fileName = MODULE_NAME;
+
     let thisObject = {
 
         // Main functions and properties.
@@ -9,6 +16,7 @@
         getContainer: getContainer,
         setTimePeriod: setTimePeriod,
         setDatetime: setDatetime,
+        recalculateScale: recalculateScale, 
         draw: draw,
         payload: []
     };
@@ -36,407 +44,511 @@
 
     function initialize(pCompetition, pStorage, pDatetime, pTimePeriod, callBackFunction) {
 
-        competition = pCompetition;
-        competitorsSequences = pStorage.competitorsSequences;
+        try {
 
-        datetime = pDatetime;
-        timePeriod = pTimePeriod;
+            if (INFO_LOG === true) { logger.write("[INFO] initialize -> Entering function."); }
 
-        recalculate();
-        recalculateScale();
+            competition = pCompetition;
+            competitorsSequences = pStorage.competitorsSequences;
 
-        viewPort.eventHandler.listenToEvent("Offset Changed", onOffsetChanged);
+            datetime = pDatetime;
+            timePeriod = pTimePeriod;
 
-        /* Create the Payload structure */
+            recalculate();
+            recalculateScale();
 
-        for (let k = 0; k < competition.participants.length; k++) {
+            viewPort.eventHandler.listenToEvent("Offset Changed", onOffsetChanged);
 
-            let participant = competition.participants[k];
+            /* Create the Payload structure */
 
-            let payload = {
-                profile: {
-                    position: {
-                        x: 0,
-                        y: 0
-                    },
-                    visible: false
+            for (let k = 0; k < competition.participants.length; k++) {
+
+                let participant = competition.participants[k];
+
+                let payload = {
+                    profile: {
+                        position: {
+                            x: 0,
+                            y: 0
+                        },
+                        visible: false
+                    }
                 }
+
+                thisObject.payload.push(payload);
             }
 
-            thisObject.payload.push(payload);
+            for (let k = 0; k < competition.participants.length; k++) {
+
+                let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
+
+                fileSequence.eventHandler.listenToEvent("Files Updated", onFilesUpdated); // Only the first sequence is supported right now.
+
+            }
+
+            callBackFunction(GLOBAL.DEFAULT_OK_RESPONSE);
+
+        } catch (err) {
+
+            if (ERROR_LOG === true) { logger.write("[ERROR] initialize -> err.message = " + err.message); }
+
         }
-
-        for (let k = 0; k < competition.participants.length; k++) {
-
-            let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
-
-            fileSequence.eventHandler.listenToEvent("Files Updated", onFilesUpdated); // Only the first sequence is supported right now.
-
-        }
-
-        callBackFunction(GLOBAL.DEFAULT_OK_RESPONSE);
     }
 
     function getContainer(point) {
 
-        let container;
+        try {
 
-        /* First we check if this point is inside this space. */
+            if (INFO_LOG === true) { logger.write("[INFO] getContainer -> Entering function."); }
 
-        if (this.container.frame.isThisPointHere(point) === true) {
+            let container;
 
-            return this.container;
+            /* First we check if this point is inside this space. */
 
-        } else {
+            if (this.container.frame.isThisPointHere(point) === true) {
 
-            /* This point does not belong to this space. */
+                return this.container;
 
-            return undefined;
+            } else {
+
+                /* This point does not belong to this space. */
+
+                return undefined;
+            }
+
+        } catch (err) {
+
+            if (ERROR_LOG === true) { logger.write("[ERROR] getContainer -> err.message = " + err.message); }
+
         }
-
     }
 
     function onFilesUpdated() {
 
-        updatedFilesEventsReceived++;
+        try {
 
-        if (updatedFilesEventsReceived === competition.participants.length) {
+            if (INFO_LOG === true) { logger.write("[INFO] onFilesUpdated -> Entering function."); }
 
-            recalculate();
-            updatedFilesEventsReceived = 0;
+            updatedFilesEventsReceived++;
+
+            if (updatedFilesEventsReceived === competition.participants.length) {
+
+                recalculate();
+                updatedFilesEventsReceived = 0;
+            }
+
+        } catch (err) {
+
+            if (ERROR_LOG === true) { logger.write("[ERROR] onFilesUpdated -> err.message = " + err.message); }
+
         }
     }
 
     function setTimePeriod(pTimePeriod) {
 
-        timePeriod = pTimePeriod;
+        try {
 
-        recalculate();
+            if (INFO_LOG === true) { logger.write("[INFO] setTimePeriod -> Entering function."); }
 
+            timePeriod = pTimePeriod;
+
+            recalculate();
+
+        } catch (err) {
+
+            if (ERROR_LOG === true) { logger.write("[ERROR] setTimePeriod -> err.message = " + err.message); }
+
+        }
     }
 
     function setDatetime(newDatetime) {
 
-        datetime = newDatetime;
+        try {
 
+            if (INFO_LOG === true) { logger.write("[INFO] setDatetime -> Entering function."); }
+
+            datetime = newDatetime;
+
+        } catch (err) {
+
+            if (ERROR_LOG === true) { logger.write("[ERROR] setDatetime -> err.message = " + err.message); }
+
+        }
     }
 
     function draw() {
 
-        plotStartFinishLines();
-        plotChart();
+        try {
 
+            if (INTENSIVE_LOG === true) { logger.write("[INFO] setDatetime -> Entering function."); }
+
+            plotStartFinishLines();
+            plotChart();
+
+        } catch (err) {
+
+            if (ERROR_LOG === true) { logger.write("[ERROR] draw -> err.message = " + err.message); }
+
+        }
     }
 
     function onOffsetChanged() {
 
-        if (Math.random() * 100 > 95) {
+        try {
 
-            recalculate()
-        };
+            if (INFO_LOG === true) { logger.write("[INFO] onOffsetChanged -> Entering function."); }
 
+            if (Math.random() * 100 > 95) {
+
+                recalculate()
+            };
+
+        } catch (err) {
+
+            if (ERROR_LOG === true) { logger.write("[ERROR] onOffsetChanged -> err.message = " + err.message); }
+
+        }
     }
 
     function recalculate() {    
 
-        if (competitorsSequences === undefined) { return; }
+        try {
 
-        /*
+            if (INFO_LOG === true) { logger.write("[INFO] recalculate -> Entering function."); }
 
-        We are going to filter the records depending on the Time Period. We want that for a 1 min time peroid all the records appears on screen,
-        but for higher periods, we will filter out some records, so that they do not overlap ever. 
+            if (competitorsSequences === undefined) { return; }
 
-        */
+            /*
+    
+            We are going to filter the records depending on the Time Period. We want that for a 1 min time peroid all the records appears on screen,
+            but for higher periods, we will filter out some records, so that they do not overlap ever. 
+    
+            */
 
-        for (let k = 0; k < competition.participants.length; k++) {
+            for (let k = 0; k < competition.participants.length; k++) {
 
-            let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
+                let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
 
-            competition.participants[k].plotElements = [];
+                competition.participants[k].plotElements = [];
 
-            let maxSequence = fileSequence.getFilesLoaded();
+                let maxSequence = fileSequence.getFilesLoaded();
 
-            for (let j = 0; j < maxSequence; j++) {
+                for (let j = 0; j < maxSequence; j++) {
 
-                let file = fileSequence.getFile(j);
+                    let file = fileSequence.getFile(j);
 
-                /* First the small balls */
+                    /* First the small balls */
 
-                for (let i = 0; i < file.length; i++) {
+                    for (let i = 0; i < file.length; i++) {
 
-                    let newHistoryRecord = {
+                        let newHistoryRecord = {
 
-                        date: Math.trunc(file[i][0] / 60000) * 60000 + 30000,
-                        buyAvgRate: file[i][1],
-                        sellAvgRate: file[i][2],
+                            date: Math.trunc(file[i][0] / 60000) * 60000 + 30000,
+                            buyAvgRate: file[i][1],
+                            sellAvgRate: file[i][2],
 
-                        lastSellRate: file[i][3],
-                        sellExecRate: file[i][4],
-                        lastBuyRate: file[i][5],
-                        buyExecRate: file[i][6],
+                            lastSellRate: file[i][3],
+                            sellExecRate: file[i][4],
+                            lastBuyRate: file[i][5],
+                            buyExecRate: file[i][6],
 
-                        marketRate: file[i][7],
-                        newPositions: file[i][8],
-                        newTrades: file[i][9],
-                        movedPositions: file[i][10],
-                        profitsAssetA: file[i][11],
-                        profitsAssetB: file[i][12],
-                        combinedProfitsA: file[i][13],
-                        combinedProfitsB: file[i][14],
+                            marketRate: file[i][7],
+                            newPositions: file[i][8],
+                            newTrades: file[i][9],
+                            movedPositions: file[i][10],
+                            profitsAssetA: file[i][11],
+                            profitsAssetB: file[i][12],
+                            combinedProfitsA: file[i][13],
+                            combinedProfitsB: file[i][14],
 
-                        messageRelevance: file[i][15],
-                        messageTitle: file[i][16],
-                        messageBody: file[i][17]
-                    };
+                            messageRelevance: file[i][15],
+                            messageTitle: file[i][16],
+                            messageBody: file[i][17]
+                        };
 
-                    competition.participants[k].plotElements.push(newHistoryRecord);
+                        competition.participants[k].plotElements.push(newHistoryRecord);
+                    }
                 }
             }
+
+        } catch (err) {
+
+            if (ERROR_LOG === true) { logger.write("[ERROR] recalculate -> err.message = " + err.message); }
+
         }
     }
 
     function recalculateScale() {
 
-        if (competitorsSequences === undefined) { return; } // We need the market file to be loaded to make the calculation.
+        try {
 
-        if (timeLineCoordinateSystem.maxValue > 0) { return; } // Already calculated.
+            if (INFO_LOG === true) { logger.write("[INFO] recalculateScale -> Entering function."); }
 
-        let minValue = {
-            x: EARLIEST_DATE.valueOf(),
-            y: 0
-        };
+            if (competitorsSequences === undefined) { return; } // We need the market file to be loaded to make the calculation.
 
-        let maxValue = {
-            x: MAX_PLOTABLE_DATE.valueOf(),
-            y: nextPorwerOf10(USDT_BTC_HTH)
-        };
+            if (timeLineCoordinateSystem.maxValue > 0) { return; } // Already calculated.
+
+            let minValue = {
+                x: EARLIEST_DATE.valueOf(),
+                y: 0
+            };
+
+            let maxValue = {
+                x: MAX_PLOTABLE_DATE.valueOf(),
+                y: nextPorwerOf10(USDT_BTC_HTH)
+            };
 
 
-        timeLineCoordinateSystem.initialize(
-            minValue,
-            maxValue,
-            thisObject.container.frame.width,
-            thisObject.container.frame.height
-        );
+            timeLineCoordinateSystem.initialize(
+                minValue,
+                maxValue,
+                thisObject.container.frame.width,
+                thisObject.container.frame.height
+            );
+
+        } catch (err) {
+
+            if (ERROR_LOG === true) { logger.write("[ERROR] recalculateScale -> err.message = " + err.message); }
+
+        }
     }
 
     function plotStartFinishLines() {
 
-        let startDatetime = new Date(competition.startDatetime);
-        let finishDatetime = new Date(competition.finishDatetime);
+        try {
 
-        let startPointDown = {
-            x: startDatetime.valueOf(),
-            y: 0
-        };
+            if (INFO_LOG === true) { logger.write("[INFO] plotStartFinishLines -> Entering function."); }
 
-        let startPointUp = {
-            x: startDatetime.valueOf(),
-            y: 0
-        };
+            let startDatetime = new Date(competition.startDatetime);
+            let finishDatetime = new Date(competition.finishDatetime);
 
-        startPointDown = timeLineCoordinateSystem.transformThisPoint(startPointDown);
-        startPointDown = transformThisPoint(startPointDown, thisObject.container);
+            let startPointDown = {
+                x: startDatetime.valueOf(),
+                y: 0
+            };
 
-        startPointUp = timeLineCoordinateSystem.transformThisPoint(startPointUp);
-        startPointUp.y = startPointUp.y - thisObject.container.frame.height;
-        startPointUp = transformThisPoint(startPointUp, thisObject.container);
+            let startPointUp = {
+                x: startDatetime.valueOf(),
+                y: 0
+            };
 
-        if (startPointUp.x > viewPort.visibleArea.bottomLeft.x && startPointUp.x < viewPort.visibleArea.bottomRight.x)  {
+            startPointDown = timeLineCoordinateSystem.transformThisPoint(startPointDown);
+            startPointDown = transformThisPoint(startPointDown, thisObject.container);
 
-            startPointDown = viewPort.fitIntoVisibleArea(startPointDown);
-            startPointUp = viewPort.fitIntoVisibleArea(startPointUp);
+            startPointUp = timeLineCoordinateSystem.transformThisPoint(startPointUp);
+            startPointUp.y = startPointUp.y - thisObject.container.frame.height;
+            startPointUp = transformThisPoint(startPointUp, thisObject.container);
 
-            browserCanvasContext.beginPath();
+            if (startPointUp.x > viewPort.visibleArea.bottomLeft.x && startPointUp.x < viewPort.visibleArea.bottomRight.x) {
 
-            browserCanvasContext.moveTo(startPointDown.x, startPointDown.y);
-            browserCanvasContext.lineTo(startPointUp.x, startPointUp.y);
-
-            browserCanvasContext.closePath();
-
-            browserCanvasContext.strokeStyle = 'rgba(100, 10, 10, 0.5)';
-            browserCanvasContext.lineWidth = 2;
-            browserCanvasContext.stroke();
-
-        }
-
-
-        /* Here we draw the finish line. */
-
-        const TOTAL_SQUARES_TALL = ONE_DAY_IN_MILISECONDS / timePeriod * 10;
-        const SQUARE_SIDE = thisObject.container.frame.height / TOTAL_SQUARES_TALL;
-
-        let paintThis = true;
-
-        for (i = 0; i < 3; i++) {
-
-            for (j = 0; j < TOTAL_SQUARES_TALL; j++) {
-
-                let finishPointDown = {
-                    x: finishDatetime.valueOf(),
-                    y: 0
-                };
-
-                let finishPointUp = {
-                    x: finishDatetime.valueOf(),
-                    y: 0
-                };
-
-                finishPointDown = timeLineCoordinateSystem.transformThisPoint(finishPointDown);
-
-                finishPointDown.x = finishPointDown.x + SQUARE_SIDE * i;
-                finishPointDown.y = finishPointDown.y - SQUARE_SIDE * j;
-
-                finishPointDown = transformThisPoint(finishPointDown, thisObject.container);
-
-                finishPointUp = timeLineCoordinateSystem.transformThisPoint(finishPointUp);
-
-                finishPointUp.x = finishPointUp.x + SQUARE_SIDE * i + SQUARE_SIDE;
-                finishPointUp.y = finishPointUp.y - SQUARE_SIDE * j - SQUARE_SIDE;
-
-                finishPointUp = transformThisPoint(finishPointUp, thisObject.container);
-
-                if (finishPointUp.x < viewPort.visibleArea.bottomLeft.x || finishPointDown.x > viewPort.visibleArea.bottomRight.x) { continue; }
-
-                finishPointDown = viewPort.fitIntoVisibleArea(finishPointDown);
-                finishPointUp = viewPort.fitIntoVisibleArea(finishPointUp);
+                startPointDown = viewPort.fitIntoVisibleArea(startPointDown);
+                startPointUp = viewPort.fitIntoVisibleArea(startPointUp);
 
                 browserCanvasContext.beginPath();
 
-                browserCanvasContext.moveTo(finishPointDown.x, finishPointDown.y);
-                browserCanvasContext.lineTo(finishPointUp.x, finishPointDown.y);
-                browserCanvasContext.lineTo(finishPointUp.x, finishPointUp.y);
-                browserCanvasContext.lineTo(finishPointDown.x, finishPointUp.y);
+                browserCanvasContext.moveTo(startPointDown.x, startPointDown.y);
+                browserCanvasContext.lineTo(startPointUp.x, startPointUp.y);
 
                 browserCanvasContext.closePath();
 
-                /*
-                browserCanvasContext.strokeStyle = 'rgba(100, 100, 100, 1)';
-                browserCanvasContext.lineWidth = 1;
+                browserCanvasContext.strokeStyle = 'rgba(100, 10, 10, 0.5)';
+                browserCanvasContext.lineWidth = 2;
                 browserCanvasContext.stroke();
-                */
 
-                if (paintThis === true) {
-
-                    browserCanvasContext.fillStyle = 'rgba(100, 100, 100, ' + (0.6 - i / 5) + ')';
-                    browserCanvasContext.fill();
-
-                }
-
-                if (paintThis === true) { paintThis = false; } else { paintThis = true;}
             }
 
-            if (paintThis === true) { paintThis = false; } else { paintThis = true; }
+
+            /* Here we draw the finish line. */
+
+            const TOTAL_SQUARES_TALL = ONE_DAY_IN_MILISECONDS / timePeriod * 10;
+            const SQUARE_SIDE = thisObject.container.frame.height / TOTAL_SQUARES_TALL;
+
+            let paintThis = true;
+
+            for (i = 0; i < 3; i++) {
+
+                for (j = 0; j < TOTAL_SQUARES_TALL; j++) {
+
+                    let finishPointDown = {
+                        x: finishDatetime.valueOf(),
+                        y: 0
+                    };
+
+                    let finishPointUp = {
+                        x: finishDatetime.valueOf(),
+                        y: 0
+                    };
+
+                    finishPointDown = timeLineCoordinateSystem.transformThisPoint(finishPointDown);
+
+                    finishPointDown.x = finishPointDown.x + SQUARE_SIDE * i;
+                    finishPointDown.y = finishPointDown.y - SQUARE_SIDE * j;
+
+                    finishPointDown = transformThisPoint(finishPointDown, thisObject.container);
+
+                    finishPointUp = timeLineCoordinateSystem.transformThisPoint(finishPointUp);
+
+                    finishPointUp.x = finishPointUp.x + SQUARE_SIDE * i + SQUARE_SIDE;
+                    finishPointUp.y = finishPointUp.y - SQUARE_SIDE * j - SQUARE_SIDE;
+
+                    finishPointUp = transformThisPoint(finishPointUp, thisObject.container);
+
+                    if (finishPointUp.x < viewPort.visibleArea.bottomLeft.x || finishPointDown.x > viewPort.visibleArea.bottomRight.x) { continue; }
+
+                    finishPointDown = viewPort.fitIntoVisibleArea(finishPointDown);
+                    finishPointUp = viewPort.fitIntoVisibleArea(finishPointUp);
+
+                    browserCanvasContext.beginPath();
+
+                    browserCanvasContext.moveTo(finishPointDown.x, finishPointDown.y);
+                    browserCanvasContext.lineTo(finishPointUp.x, finishPointDown.y);
+                    browserCanvasContext.lineTo(finishPointUp.x, finishPointUp.y);
+                    browserCanvasContext.lineTo(finishPointDown.x, finishPointUp.y);
+
+                    browserCanvasContext.closePath();
+
+                    /*
+                    browserCanvasContext.strokeStyle = 'rgba(100, 100, 100, 1)';
+                    browserCanvasContext.lineWidth = 1;
+                    browserCanvasContext.stroke();
+                    */
+
+                    if (paintThis === true) {
+
+                        browserCanvasContext.fillStyle = 'rgba(100, 100, 100, ' + (0.6 - i / 5) + ')';
+                        browserCanvasContext.fill();
+
+                    }
+
+                    if (paintThis === true) { paintThis = false; } else { paintThis = true; }
+                }
+
+                if (paintThis === true) { paintThis = false; } else { paintThis = true; }
+            }
+
+        } catch (err) {
+
+            if (ERROR_LOG === true) { logger.write("[ERROR] plotStartFinishLines -> err.message = " + err.message); }
+
         }
     }
 
     function plotChart() {
 
-        for (let k = 0; k < competition.participants.length; k++) {
+        try {
 
-            let point = {
-                x: 0,
-                y: 0
-            };
+            if (INTENSIVE_LOG === true) { logger.write("[INFO] plotChart -> Entering function."); }
 
-            let upLabel = "";
+            for (let k = 0; k < competition.participants.length; k++) {
 
-            let participant = competition.participants[k];
-            let plotElements = participant.plotElements;
-
-            for (let i = 0; i < plotElements.length; i++) {
-
-                record = plotElements[i];
-
-                point = {
-                    x: record.date,
-                    y: record.combinedProfitsB 
+                let point = {
+                    x: 0,
+                    y: 0
                 };
 
-                upLabel = "ROI: " + Math.trunc(record.combinedProfitsB * 10000) / 10000 + " %";
+                let upLabel = "";
 
-                point = timeLineCoordinateSystem.transformThisPoint(point);
+                let participant = competition.participants[k];
+                let plotElements = participant.plotElements;
 
-                point.y = point.y - thisObject.container.frame.height / 2;
+                for (let i = 0; i < plotElements.length; i++) {
 
-                point = transformThisPoint(point, thisObject.container);
+                    record = plotElements[i];
 
-                if (point.x < viewPort.visibleArea.bottomLeft.x || point.x > viewPort.visibleArea.bottomRight.x) { continue; }
+                    point = {
+                        x: record.date,
+                        y: record.combinedProfitsB
+                    };
 
-                point = viewPort.fitIntoVisibleArea(point);
+                    upLabel = "ROI: " + Math.trunc(record.combinedProfitsB * 10000) / 10000 + " %";
 
-                let isCurrentRecord = false;
+                    point = timeLineCoordinateSystem.transformThisPoint(point);
 
-                if (datetime !== undefined) {
-                    let dateValue = datetime.valueOf();
-                    if (dateValue >= record.date - timePeriod / 2 && dateValue <= record.date + timePeriod / 2 - 1) {
-                        isCurrentRecord = true;
+                    point.y = point.y - thisObject.container.frame.height / 2;
+
+                    point = transformThisPoint(point, thisObject.container);
+
+                    if (point.x < viewPort.visibleArea.bottomLeft.x || point.x > viewPort.visibleArea.bottomRight.x) { continue; }
+
+                    point = viewPort.fitIntoVisibleArea(point);
+
+                    let isCurrentRecord = false;
+
+                    if (datetime !== undefined) {
+                        let dateValue = datetime.valueOf();
+                        if (dateValue >= record.date - timePeriod / 2 && dateValue <= record.date + timePeriod / 2 - 1) {
+                            isCurrentRecord = true;
+                        }
                     }
-                }
 
-                let opacity = '0.2';
+                    let opacity = '0.2';
 
-                let radius = 6;
+                    let radius = 6;
 
-                browserCanvasContext.lineWidth = 1;
+                    browserCanvasContext.lineWidth = 1;
 
-                /* Circles */
+                    /* Circles */
 
-                browserCanvasContext.beginPath();
+                    browserCanvasContext.beginPath();
 
-                browserCanvasContext.strokeStyle = 'rgba(27, 105, 7, ' + opacity + ')';
+                    browserCanvasContext.strokeStyle = 'rgba(27, 105, 7, ' + opacity + ')';
 
-                if (isCurrentRecord === false) {
-                    browserCanvasContext.fillStyle = 'rgba(64, 217, 26, ' + opacity + ')';
-                } else {
-                    browserCanvasContext.fillStyle = 'rgba(255, 233, 31, ' + opacity + ')';  /* highlight the current record */
-                }
+                    if (isCurrentRecord === false) {
+                        browserCanvasContext.fillStyle = 'rgba(64, 217, 26, ' + opacity + ')';
+                    } else {
+                        browserCanvasContext.fillStyle = 'rgba(255, 233, 31, ' + opacity + ')';  /* highlight the current record */
+                    }
 
-                browserCanvasContext.arc(point.x, point.y, radius, 0, Math.PI * 2, true);
-                browserCanvasContext.closePath();
+                    browserCanvasContext.arc(point.x, point.y, radius, 0, Math.PI * 2, true);
+                    browserCanvasContext.closePath();
 
-                if (point.x < viewPort.visibleArea.topLeft.x + 50 || point.x > viewPort.visibleArea.bottomRight.x - 50) {/*we leave this history without fill. */ } else {
-                    browserCanvasContext.fill();
-                }
+                    if (point.x < viewPort.visibleArea.topLeft.x + 50 || point.x > viewPort.visibleArea.bottomRight.x - 50) {/*we leave this history without fill. */ } else {
+                        browserCanvasContext.fill();
+                    }
 
-                browserCanvasContext.stroke();
+                    browserCanvasContext.stroke();
 
-                /* Since there is at least some point plotted, then the profile should be visible. */
+                    /* Since there is at least some point plotted, then the profile should be visible. */
 
-                thisObject.payload[k].profile.visible = true;
+                    thisObject.payload[k].profile.visible = true;
 
-                /* Image */
+                    /* Image */
 
-                if (participant.profilePicture !== undefined) {
+                    if (participant.profilePicture !== undefined) {
 
-                    let imageId = participant.devTeam + "." + participant.profilePicture;
-                    imageSize = 8;
+                        let imageId = participant.devTeam + "." + participant.profilePicture;
+                        imageSize = 8;
 
-                    if (imageId !== undefined) {
+                        if (imageId !== undefined) {
 
-                        let image = document.getElementById(imageId);
+                            let image = document.getElementById(imageId);
 
-                        if (image !== null) {
+                            if (image !== null) {
 
-                            browserCanvasContext.drawImage(image, point.x - imageSize / 2, point.y - imageSize / 2, imageSize, imageSize);
+                                browserCanvasContext.drawImage(image, point.x - imageSize / 2, point.y - imageSize / 2, imageSize, imageSize);
 
+                            }
                         }
                     }
                 }
+
+                /*
+     
+                We replace the coordinate of the profile point so that whoever has a reference to it, gets the new position.
+                We will use the last point plotted on screen as the profilePoint.
+     
+                */
+
+                thisObject.payload[k].profile.position.x = point.x;
+                thisObject.payload[k].profile.position.y = point.y;
+                thisObject.payload[k].profile.upLabel = upLabel;
             }
 
-            /*
- 
-            We replace the coordinate of the profile point so that whoever has a reference to it, gets the new position.
-            We will use the last point plotted on screen as the profilePoint.
- 
-            */
+        } catch (err) {
 
-            thisObject.payload[k].profile.position.x = point.x;
-            thisObject.payload[k].profile.position.y = point.y;
-            thisObject.payload[k].profile.upLabel = upLabel;
+            if (ERROR_LOG === true) { logger.write("[ERROR] plotChart -> err.message = " + err.message); }
+
         }
-
     }
 }
 
