@@ -80,10 +80,12 @@
 
             for (let k = 0; k < competition.participants.length; k++) {
 
-                let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
+                if (competitorsSequences[k] !== undefined) { // some competitors might not have any history yet.
 
-                fileSequence.eventHandler.listenToEvent("Files Updated", onFilesUpdated); // Only the first sequence is supported right now.
+                    let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
 
+                    fileSequence.eventHandler.listenToEvent("Files Updated", onFilesUpdated); // Only the first sequence is supported right now.
+                }
             }
 
             callBackFunction(GLOBAL.DEFAULT_OK_RESPONSE);
@@ -227,46 +229,49 @@
 
             for (let k = 0; k < competition.participants.length; k++) {
 
-                let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
+                if (competitorsSequences[k] !== undefined) { // some competitors might not have any history yet.
 
-                competition.participants[k].plotElements = [];
+                    let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
 
-                let maxSequence = fileSequence.getFilesLoaded();
+                    competition.participants[k].plotElements = [];
 
-                for (let j = 0; j < maxSequence; j++) {
+                    let maxSequence = fileSequence.getFilesLoaded();
 
-                    let file = fileSequence.getFile(j);
+                    for (let j = 0; j < maxSequence; j++) {
 
-                    /* First the small balls */
+                        let file = fileSequence.getFile(j);
 
-                    for (let i = 0; i < file.length; i++) {
+                        /* First the small balls */
 
-                        let newHistoryRecord = {
+                        for (let i = 0; i < file.length; i++) {
 
-                            date: Math.trunc(file[i][0] / 60000) * 60000 + 30000,
-                            buyAvgRate: file[i][1],
-                            sellAvgRate: file[i][2],
+                            let newHistoryRecord = {
 
-                            lastSellRate: file[i][3],
-                            sellExecRate: file[i][4],
-                            lastBuyRate: file[i][5],
-                            buyExecRate: file[i][6],
+                                date: Math.trunc(file[i][0] / 60000) * 60000 + 30000,
+                                buyAvgRate: file[i][1],
+                                sellAvgRate: file[i][2],
 
-                            marketRate: file[i][7],
-                            newPositions: file[i][8],
-                            newTrades: file[i][9],
-                            movedPositions: file[i][10],
-                            profitsAssetA: file[i][11],
-                            profitsAssetB: file[i][12],
-                            combinedProfitsA: file[i][13],
-                            combinedProfitsB: file[i][14],
+                                lastSellRate: file[i][3],
+                                sellExecRate: file[i][4],
+                                lastBuyRate: file[i][5],
+                                buyExecRate: file[i][6],
 
-                            messageRelevance: file[i][15],
-                            messageTitle: file[i][16],
-                            messageBody: file[i][17]
-                        };
+                                marketRate: file[i][7],
+                                newPositions: file[i][8],
+                                newTrades: file[i][9],
+                                movedPositions: file[i][10],
+                                profitsAssetA: file[i][11],
+                                profitsAssetB: file[i][12],
+                                combinedProfitsA: file[i][13],
+                                combinedProfitsB: file[i][14],
 
-                        competition.participants[k].plotElements.push(newHistoryRecord);
+                                messageRelevance: file[i][15],
+                                messageTitle: file[i][16],
+                                messageBody: file[i][17]
+                            };
+
+                            competition.participants[k].plotElements.push(newHistoryRecord);
+                        }
                     }
                 }
             }
@@ -451,97 +456,101 @@
                 let participant = competition.participants[k];
                 let plotElements = participant.plotElements;
 
-                for (let i = 0; i < plotElements.length; i++) {
+                if (plotElements !== undefined) {
 
-                    record = plotElements[i];
+                    for (let i = 0; i < plotElements.length; i++) {
 
-                    point = {
-                        x: record.date,
-                        y: record.combinedProfitsB
-                    };
+                        record = plotElements[i];
 
-                    upLabel = "ROI: " + Math.trunc(record.combinedProfitsB * 10000) / 10000 + " %";
+                        point = {
+                            x: record.date,
+                            y: record.combinedProfitsB
+                        };
 
-                    point = timeLineCoordinateSystem.transformThisPoint(point);
+                        upLabel = "ROI: " + Math.trunc(record.combinedProfitsB * 10000) / 10000 + " %";
 
-                    point.y = point.y - thisObject.container.frame.height / 2;
+                        point = timeLineCoordinateSystem.transformThisPoint(point);
 
-                    point = transformThisPoint(point, thisObject.container);
+                        point.y = point.y - thisObject.container.frame.height / 2;
 
-                    if (point.x < viewPort.visibleArea.bottomLeft.x || point.x > viewPort.visibleArea.bottomRight.x) { continue; }
+                        point = transformThisPoint(point, thisObject.container);
 
-                    point = viewPort.fitIntoVisibleArea(point);
+                        if (point.x < viewPort.visibleArea.bottomLeft.x || point.x > viewPort.visibleArea.bottomRight.x) { continue; }
 
-                    let isCurrentRecord = false;
+                        point = viewPort.fitIntoVisibleArea(point);
 
-                    if (datetime !== undefined) {
-                        let dateValue = datetime.valueOf();
-                        if (dateValue >= record.date - timePeriod / 2 && dateValue <= record.date + timePeriod / 2 - 1) {
-                            isCurrentRecord = true;
+                        let isCurrentRecord = false;
+
+                        if (datetime !== undefined) {
+                            let dateValue = datetime.valueOf();
+                            if (dateValue >= record.date - timePeriod / 2 && dateValue <= record.date + timePeriod / 2 - 1) {
+                                isCurrentRecord = true;
+                            }
                         }
-                    }
 
-                    let opacity = '0.2';
+                        let opacity = '0.2';
 
-                    let radius = 6;
+                        let radius = 6;
 
-                    browserCanvasContext.lineWidth = 1;
+                        browserCanvasContext.lineWidth = 1;
 
-                    /* Circles */
+                        /* Circles */
 
-                    browserCanvasContext.beginPath();
+                        browserCanvasContext.beginPath();
 
-                    browserCanvasContext.strokeStyle = 'rgba(27, 105, 7, ' + opacity + ')';
+                        browserCanvasContext.strokeStyle = 'rgba(27, 105, 7, ' + opacity + ')';
 
-                    if (isCurrentRecord === false) {
-                        browserCanvasContext.fillStyle = 'rgba(64, 217, 26, ' + opacity + ')';
-                    } else {
-                        browserCanvasContext.fillStyle = 'rgba(255, 233, 31, ' + opacity + ')';  /* highlight the current record */
-                    }
+                        if (isCurrentRecord === false) {
+                            browserCanvasContext.fillStyle = 'rgba(64, 217, 26, ' + opacity + ')';
+                        } else {
+                            browserCanvasContext.fillStyle = 'rgba(255, 233, 31, ' + opacity + ')';  /* highlight the current record */
+                        }
 
-                    browserCanvasContext.arc(point.x, point.y, radius, 0, Math.PI * 2, true);
-                    browserCanvasContext.closePath();
+                        browserCanvasContext.arc(point.x, point.y, radius, 0, Math.PI * 2, true);
+                        browserCanvasContext.closePath();
 
-                    if (point.x < viewPort.visibleArea.topLeft.x + 50 || point.x > viewPort.visibleArea.bottomRight.x - 50) {/*we leave this history without fill. */ } else {
-                        browserCanvasContext.fill();
-                    }
+                        if (point.x < viewPort.visibleArea.topLeft.x + 50 || point.x > viewPort.visibleArea.bottomRight.x - 50) {/*we leave this history without fill. */ } else {
+                            browserCanvasContext.fill();
+                        }
 
-                    browserCanvasContext.stroke();
+                        browserCanvasContext.stroke();
 
-                    /* Since there is at least some point plotted, then the profile should be visible. */
+                        /* Since there is at least some point plotted, then the profile should be visible. */
 
-                    thisObject.payload[k].profile.visible = true;
+                        thisObject.payload[k].profile.visible = true;
 
-                    /* Image */
+                        /* Image */
 
-                    if (participant.profilePicture !== undefined) {
+                        if (participant.profilePicture !== undefined) {
 
-                        let imageId = participant.devTeam + "." + participant.profilePicture;
-                        imageSize = 8;
+                            let imageId = participant.devTeam + "." + participant.profilePicture;
+                            imageSize = 8;
 
-                        if (imageId !== undefined) {
+                            if (imageId !== undefined) {
 
-                            let image = document.getElementById(imageId);
+                                let image = document.getElementById(imageId);
 
-                            if (image !== null) {
+                                if (image !== null) {
 
-                                browserCanvasContext.drawImage(image, point.x - imageSize / 2, point.y - imageSize / 2, imageSize, imageSize);
+                                    browserCanvasContext.drawImage(image, point.x - imageSize / 2, point.y - imageSize / 2, imageSize, imageSize);
 
+                                }
                             }
                         }
                     }
+
+                    /*
+         
+                    We replace the coordinate of the profile point so that whoever has a reference to it, gets the new position.
+                    We will use the last point plotted on screen as the profilePoint.
+         
+                    */
+
+                    thisObject.payload[k].profile.position.x = point.x;
+                    thisObject.payload[k].profile.position.y = point.y;
+                    thisObject.payload[k].profile.upLabel = upLabel;
+
                 }
-
-                /*
-     
-                We replace the coordinate of the profile point so that whoever has a reference to it, gets the new position.
-                We will use the last point plotted on screen as the profilePoint.
-     
-                */
-
-                thisObject.payload[k].profile.position.x = point.x;
-                thisObject.payload[k].profile.position.y = point.y;
-                thisObject.payload[k].profile.upLabel = upLabel;
             }
 
         } catch (err) {
