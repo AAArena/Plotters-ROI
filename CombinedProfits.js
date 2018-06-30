@@ -40,6 +40,8 @@
 
     let updatedFilesEventsReceived = 0;
 
+    let fileStyles = [];
+
     return thisObject;
 
     function initialize(pCompetition, pStorage, pDatetime, pTimePeriod, callBackFunction) {
@@ -84,6 +86,20 @@
 
                     fileSequence.eventHandler.listenToEvent("Files Updated", onFilesUpdated); // Only the first sequence is supported right now.
               
+            }
+
+            /* Here we will choose the colors of each participants path. */
+
+            for (let k = 0; k < competition.participants.length; k++) {
+
+                let red = Math.trunc(Math.random() * 5) * 50;
+                let green = Math.trunc(Math.random() * 5) * 50;
+                let blue = Math.trunc(Math.random() * 5) * 50;               
+
+                let fillStyle = " " + red + "," + green + "," + blue;
+
+                fileStyles.push(fillStyle);
+
             }
 
             callBackFunction(GLOBAL.DEFAULT_OK_RESPONSE);
@@ -210,7 +226,7 @@
         }
     }
 
-    function recalculate() {    
+    function recalculate() {
 
         try {
 
@@ -239,7 +255,13 @@
 
                     /* First the small balls */
 
-                    for (let i = 0; i < file.length; i++) {
+                    const ONE_MIN_IN_MILISECONDS = 60 * 1000;
+                    let step = timePeriod / ONE_MIN_IN_MILISECONDS;
+
+                    let i = 0;
+                    let lastRecordPushed = 0;
+
+                    for (i = 0; i < file.length; i = i + step) {
 
                         let newHistoryRecord = {
 
@@ -267,6 +289,42 @@
                         };
 
                         competition.participants[k].plotElements.push(newHistoryRecord);
+                        lastRecordPushed = i;
+                    }
+
+                    /* We allways want to put the last record of the file on the filterd dataset, so as to allways show the latest advance of the bot. */
+
+                    i = file.length - 1;
+
+                    if (lastRecordPushed !== i) {
+
+                        let newHistoryRecord = {
+
+                            date: Math.trunc(file[i][0] / 60000) * 60000 + 30000,
+                            buyAvgRate: file[i][1],
+                            sellAvgRate: file[i][2],
+
+                            lastSellRate: file[i][3],
+                            sellExecRate: file[i][4],
+                            lastBuyRate: file[i][5],
+                            buyExecRate: file[i][6],
+
+                            marketRate: file[i][7],
+                            newPositions: file[i][8],
+                            newTrades: file[i][9],
+                            movedPositions: file[i][10],
+                            profitsAssetA: file[i][11],
+                            profitsAssetB: file[i][12],
+                            combinedProfitsA: file[i][13],
+                            combinedProfitsB: file[i][14],
+
+                            messageRelevance: file[i][15],
+                            messageTitle: file[i][16],
+                            messageBody: file[i][17]
+                        };
+
+                        competition.participants[k].plotElements.push(newHistoryRecord);
+
                     }
                 }
             }
@@ -453,13 +511,16 @@
 
                 if (plotElements !== undefined) {
 
+                    let profileIntervalCounter = 0;
+                    let previousPoint;
+
                     for (let i = 0; i < plotElements.length; i++) {
 
                         record = plotElements[i];
 
                         point = {
                             x: record.date,
-                            y: record.combinedProfitsB
+                            y: record.combinedProfitsB * 100
                         };
 
                         upLabel = "ROI: " + Math.trunc(record.combinedProfitsB * 10000) / 10000 + " %";
@@ -485,18 +546,19 @@
 
                         let opacity = '0.2';
 
-                        let radius = 3;
+                        let radius = 2;
 
                         browserCanvasContext.lineWidth = 1;
+
 
                         /* Circles */
 
                         browserCanvasContext.beginPath();
 
-                        browserCanvasContext.strokeStyle = 'rgba(27, 105, 7, ' + opacity + ')';
+                        browserCanvasContext.strokeStyle = 'rgba(' + UI_COLOR.DARK + ', ' + opacity + ')';
 
                         if (isCurrentRecord === false) {
-                            browserCanvasContext.fillStyle = 'rgba(64, 217, 26, ' + opacity + ')';
+                            browserCanvasContext.fillStyle = 'rgba(' + fileStyles[k] + ', ' + opacity + ')';
                         } else {
                             browserCanvasContext.fillStyle = 'rgba(255, 233, 31, ' + opacity + ')';  /* highlight the current record */
                         }
@@ -514,31 +576,95 @@
 
                         thisObject.payload[k].profile.visible = true;
 
+                        /* Line */
+
+                        if (previousPoint !== undefined) {
+
+
+                            browserCanvasContext.strokeStyle = 'rgba(' + fileStyles[k] + ', ' + opacity + ')';
+                            browserCanvasContext.beginPath();
+
+                            browserCanvasContext.moveTo(previousPoint.x, previousPoint.y);
+                            browserCanvasContext.lineTo(point.x, point.y);
+
+                            browserCanvasContext.closePath();
+
+                            browserCanvasContext.stroke();
+
+                        }
+
+                        previousPoint = {
+                            x: point.x,
+                            y: point.y
+                        };
+
                         /* Image */
 
-                        if (participant.profilePicture !== undefined) {
+                        profileIntervalCounter++;
 
-                            let imageId = participant.devTeam + "." + participant.profilePicture;
-                            imageSize = 8;
+                        if (profileIntervalCounter === 25) {
 
-                            if (imageId !== undefined) {
+                            profileIntervalCounter = 0;
 
-                                let image = document.getElementById(imageId);
+                            if (participant.profilePicture !== undefined) {
 
-                                if (image !== null) {
+                                let imageId = participant.devTeam + "." + participant.profilePicture;
+                                imageSize = 15;
 
-                                    browserCanvasContext.drawImage(image, point.x - imageSize / 2, point.y - imageSize / 2, imageSize, imageSize);
+                                if (imageId !== undefined) {
 
+                                    let image = document.getElementById(imageId);
+
+                                    if (image !== null) {
+
+                                        let offset = imageSize * 1.5;
+
+                                        if (point.y > viewPort.visibleArea.bottomLeft.y / 2) { offset = - offset; }
+
+                                        /* The line */
+
+                                        browserCanvasContext.lineWidth = 0.3;
+                                        browserCanvasContext.strokeStyle = 'rgba(' + UI_COLOR.DARK + ', ' + opacity + ')';
+                                        browserCanvasContext.beginPath();
+
+                                        browserCanvasContext.moveTo(point.x, point.y + offset);
+                                        browserCanvasContext.lineTo(point.x, point.y);
+
+                                        browserCanvasContext.closePath();
+
+                                        browserCanvasContext.stroke();
+
+                                        /* The Image */
+
+                                        browserCanvasContext.drawImage(image, point.x - imageSize / 2, point.y - imageSize / 2 + offset, imageSize, imageSize);
+
+                                        /* Now the border */
+
+                                        browserCanvasContext.beginPath();
+
+                                        opacity = '0.5';
+
+                                        browserCanvasContext.lineWidth = 1;
+                                        browserCanvasContext.strokeStyle = 'rgba(' + UI_COLOR.DARK + ', ' + opacity + ')';
+
+                                        let radius = imageSize / 2 + 2;
+
+                                        browserCanvasContext.arc(point.x, point.y + offset, radius, 0, Math.PI * 2, true);
+                                        browserCanvasContext.closePath();
+
+                                        browserCanvasContext.stroke();
+
+                                    }
                                 }
                             }
                         }
                     }
 
                     /*
-         
+
                     We replace the coordinate of the profile point so that whoever has a reference to it, gets the new position.
                     We will use the last point plotted on screen as the profilePoint.
-         
+
                     */
 
                     thisObject.payload[k].profile.position.x = point.x;
@@ -554,5 +680,6 @@
 
         }
     }
+
 }
 
