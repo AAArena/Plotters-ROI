@@ -80,12 +80,10 @@
 
             for (let k = 0; k < competition.participants.length; k++) {
 
-                if (competitorsSequences[k] !== undefined) { // some competitors might not have any history yet.
-
-                    let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
+                    let fileSequence = competitorsSequences[0][k];  // Only the first dataSet is considered for now.
 
                     fileSequence.eventHandler.listenToEvent("Files Updated", onFilesUpdated); // Only the first sequence is supported right now.
-                }
+              
             }
 
             callBackFunction(GLOBAL.DEFAULT_OK_RESPONSE);
@@ -229,49 +227,46 @@
 
             for (let k = 0; k < competition.participants.length; k++) {
 
-                if (competitorsSequences[k] !== undefined) { // some competitors might not have any history yet.
+                let fileSequence = competitorsSequences[0][k];  // Only the first dataSet is considered for now.
 
-                    let fileSequence = competitorsSequences[k][0];  // Only the first dataSet is considered for now.
+                competition.participants[k].plotElements = [];
 
-                    competition.participants[k].plotElements = [];
+                let maxSequence = fileSequence.getFilesLoaded();
 
-                    let maxSequence = fileSequence.getFilesLoaded();
+                for (let j = 0; j < maxSequence; j++) {
 
-                    for (let j = 0; j < maxSequence; j++) {
+                    let file = fileSequence.getFile(j);
 
-                        let file = fileSequence.getFile(j);
+                    /* First the small balls */
 
-                        /* First the small balls */
+                    for (let i = 0; i < file.length; i++) {
 
-                        for (let i = 0; i < file.length; i++) {
+                        let newHistoryRecord = {
 
-                            let newHistoryRecord = {
+                            date: Math.trunc(file[i][0] / 60000) * 60000 + 30000,
+                            buyAvgRate: file[i][1],
+                            sellAvgRate: file[i][2],
 
-                                date: Math.trunc(file[i][0] / 60000) * 60000 + 30000,
-                                buyAvgRate: file[i][1],
-                                sellAvgRate: file[i][2],
+                            lastSellRate: file[i][3],
+                            sellExecRate: file[i][4],
+                            lastBuyRate: file[i][5],
+                            buyExecRate: file[i][6],
 
-                                lastSellRate: file[i][3],
-                                sellExecRate: file[i][4],
-                                lastBuyRate: file[i][5],
-                                buyExecRate: file[i][6],
+                            marketRate: file[i][7],
+                            newPositions: file[i][8],
+                            newTrades: file[i][9],
+                            movedPositions: file[i][10],
+                            profitsAssetA: file[i][11],
+                            profitsAssetB: file[i][12],
+                            combinedProfitsA: file[i][13],
+                            combinedProfitsB: file[i][14],
 
-                                marketRate: file[i][7],
-                                newPositions: file[i][8],
-                                newTrades: file[i][9],
-                                movedPositions: file[i][10],
-                                profitsAssetA: file[i][11],
-                                profitsAssetB: file[i][12],
-                                combinedProfitsA: file[i][13],
-                                combinedProfitsB: file[i][14],
+                            messageRelevance: file[i][15],
+                            messageTitle: file[i][16],
+                            messageBody: file[i][17]
+                        };
 
-                                messageRelevance: file[i][15],
-                                messageTitle: file[i][16],
-                                messageBody: file[i][17]
-                            };
-
-                            competition.participants[k].plotElements.push(newHistoryRecord);
-                        }
+                        competition.participants[k].plotElements.push(newHistoryRecord);
                     }
                 }
             }
@@ -490,7 +485,7 @@
 
                         let opacity = '0.2';
 
-                        let radius = 6;
+                        let radius = 3;
 
                         browserCanvasContext.lineWidth = 1;
 
