@@ -353,7 +353,7 @@
 
             let maxValue = {
                 x: MAX_PLOTABLE_DATE.valueOf(),
-                y: nextPorwerOf10(USDT_BTC_HTH)
+                y: 200 * 100
             };
 
 
@@ -415,10 +415,15 @@
 
             }
 
-
             /* Here we draw the finish line. */
 
-            const TOTAL_SQUARES_TALL = ONE_DAY_IN_MILISECONDS / timePeriod * 10;
+            let SQUARE_SIDE_REDUCTION_FACTOR = 4;
+
+            if (timePeriod <= _1_HOUR_IN_MILISECONDS) { SQUARE_SIDE_REDUCTION_FACTOR = 2; }
+            if (timePeriod <= _10_MINUTES_IN_MILISECONDS) { SQUARE_SIDE_REDUCTION_FACTOR = 1; }
+            if (timePeriod < _5_MINUTES_IN_MILISECONDS) { SQUARE_SIDE_REDUCTION_FACTOR = 0.5; }
+
+            const TOTAL_SQUARES_TALL = ONE_DAY_IN_MILISECONDS / timePeriod * (timePeriod / _1_MINUTE_IN_MILISECONDS) / SQUARE_SIDE_REDUCTION_FACTOR;
             const SQUARE_SIDE = thisObject.container.frame.height / TOTAL_SQUARES_TALL;
 
             let paintThis = true;
