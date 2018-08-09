@@ -73,7 +73,8 @@
                             x: 0,
                             y: 0
                         },
-                        visible: false
+                        visible: false,
+                        plot: true
                     }
                 }
 
@@ -558,24 +559,28 @@
 
                         /* Circles */
 
-                        browserCanvasContext.beginPath();
+                        if (thisObject.payload[k].profile.plot === true) {
 
-                        browserCanvasContext.strokeStyle = 'rgba(' + UI_COLOR.DARK + ', ' + opacity + ')';
+                            browserCanvasContext.beginPath();
 
-                        if (isCurrentRecord === false) {
-                            browserCanvasContext.fillStyle = 'rgba(' + fileStyles[k] + ', ' + opacity + ')';
-                        } else {
-                            browserCanvasContext.fillStyle = 'rgba(255, 233, 31, ' + opacity + ')';  /* highlight the current record */
+                            browserCanvasContext.strokeStyle = 'rgba(' + UI_COLOR.DARK + ', ' + opacity + ')';
+
+                            if (isCurrentRecord === false) {
+                                browserCanvasContext.fillStyle = 'rgba(' + fileStyles[k] + ', ' + opacity + ')';
+                            } else {
+                                browserCanvasContext.fillStyle = 'rgba(255, 233, 31, ' + opacity + ')';  /* highlight the current record */
+                            }
+
+                            browserCanvasContext.arc(point.x, point.y, radius, 0, Math.PI * 2, true);
+                            browserCanvasContext.closePath();
+
+                            if (point.x < viewPort.visibleArea.topLeft.x + 50 || point.x > viewPort.visibleArea.bottomRight.x - 50) {/*we leave this history without fill. */ } else {
+                                browserCanvasContext.fill();
+                            }
+
+                            browserCanvasContext.stroke();
+
                         }
-
-                        browserCanvasContext.arc(point.x, point.y, radius, 0, Math.PI * 2, true);
-                        browserCanvasContext.closePath();
-
-                        if (point.x < viewPort.visibleArea.topLeft.x + 50 || point.x > viewPort.visibleArea.bottomRight.x - 50) {/*we leave this history without fill. */ } else {
-                            browserCanvasContext.fill();
-                        }
-
-                        browserCanvasContext.stroke();
 
                         /* Since there is at least some point plotted, then the profile should be visible. */
 
@@ -583,7 +588,7 @@
 
                         /* Line */
 
-                        if (previousPoint !== undefined) {
+                        if (previousPoint !== undefined && thisObject.payload[k].profile.plot === true) {
 
 
                             browserCanvasContext.strokeStyle = 'rgba(' + fileStyles[k] + ', ' + opacity + ')';
@@ -605,60 +610,63 @@
 
                         /* Image */
 
-                        profileIntervalCounter++;
+                        if (thisObject.payload[k].profile.plot === true) {
 
-                        if (profileIntervalCounter === 25) {
+                            profileIntervalCounter++;
 
-                            profileIntervalCounter = 0;
+                            if (profileIntervalCounter === 25) {
 
-                            if (participant.profilePicture !== undefined) {
+                                profileIntervalCounter = 0;
 
-                                let imageId = participant.devTeam + "." + participant.profilePicture;
-                                imageSize = 15;
+                                if (participant.profilePicture !== undefined) {
 
-                                if (imageId !== undefined) {
+                                    let imageId = participant.devTeam + "." + participant.profilePicture;
+                                    imageSize = 15;
 
-                                    let image = document.getElementById(imageId);
+                                    if (imageId !== undefined) {
 
-                                    if (image !== null) {
+                                        let image = document.getElementById(imageId);
 
-                                        let offset = imageSize * 1.5;
+                                        if (image !== null) {
 
-                                        if (point.y > viewPort.visibleArea.bottomLeft.y / 2) { offset = - offset; }
+                                            let offset = imageSize * 1.5;
 
-                                        /* The line */
+                                            if (point.y > viewPort.visibleArea.bottomLeft.y / 2) { offset = - offset; }
 
-                                        browserCanvasContext.lineWidth = 0.3;
-                                        browserCanvasContext.strokeStyle = 'rgba(' + UI_COLOR.DARK + ', ' + opacity + ')';
-                                        browserCanvasContext.beginPath();
+                                            /* The line */
 
-                                        browserCanvasContext.moveTo(point.x, point.y + offset);
-                                        browserCanvasContext.lineTo(point.x, point.y);
+                                            browserCanvasContext.lineWidth = 0.3;
+                                            browserCanvasContext.strokeStyle = 'rgba(' + UI_COLOR.DARK + ', ' + opacity + ')';
+                                            browserCanvasContext.beginPath();
 
-                                        browserCanvasContext.closePath();
+                                            browserCanvasContext.moveTo(point.x, point.y + offset);
+                                            browserCanvasContext.lineTo(point.x, point.y);
 
-                                        browserCanvasContext.stroke();
+                                            browserCanvasContext.closePath();
 
-                                        /* The Image */
+                                            browserCanvasContext.stroke();
 
-                                        browserCanvasContext.drawImage(image, point.x - imageSize / 2, point.y - imageSize / 2 + offset, imageSize, imageSize);
+                                            /* The Image */
 
-                                        /* Now the border */
+                                            browserCanvasContext.drawImage(image, point.x - imageSize / 2, point.y - imageSize / 2 + offset, imageSize, imageSize);
 
-                                        browserCanvasContext.beginPath();
+                                            /* Now the border */
 
-                                        opacity = '0.5';
+                                            browserCanvasContext.beginPath();
 
-                                        browserCanvasContext.lineWidth = 1;
-                                        browserCanvasContext.strokeStyle = 'rgba(' + UI_COLOR.DARK + ', ' + opacity + ')';
+                                            opacity = '0.5';
 
-                                        let radius = imageSize / 2 + 2;
+                                            browserCanvasContext.lineWidth = 1;
+                                            browserCanvasContext.strokeStyle = 'rgba(' + UI_COLOR.DARK + ', ' + opacity + ')';
 
-                                        browserCanvasContext.arc(point.x, point.y + offset, radius, 0, Math.PI * 2, true);
-                                        browserCanvasContext.closePath();
+                                            let radius = imageSize / 2 + 2;
 
-                                        browserCanvasContext.stroke();
+                                            browserCanvasContext.arc(point.x, point.y + offset, radius, 0, Math.PI * 2, true);
+                                            browserCanvasContext.closePath();
 
+                                            browserCanvasContext.stroke();
+
+                                        }
                                     }
                                 }
                             }
