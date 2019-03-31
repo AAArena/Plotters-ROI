@@ -196,6 +196,7 @@
     function draw() {
 
         try {
+            return; // This plotter is currently disabled.
 
             if (INTENSIVE_LOG === true) { logger.write("[INFO] setDatetime -> Entering function."); }
 
