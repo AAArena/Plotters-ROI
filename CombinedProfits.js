@@ -23,9 +23,8 @@
 
     /* this is part of the module template */
 
-    let container = newContainer();     // Do not touch this 3 lines, they are just needed.
-    container.initialize();
-    thisObject.container = container;
+    thisObject.container = newContainer()
+    thisObject.container.initialize(MODULE_NAME)
 
     let timeLineCoordinateSystem = newTimeLineCoordinateSystem();       // Needed to be able to plot on the timeline, otherwise not.
 
@@ -43,6 +42,30 @@
     let fileStyles = [];
 
     return thisObject;
+
+    function finalize() {
+        try {
+
+            if (INFO_LOG === true) { logger.write("[INFO] finalize -> Entering function."); }
+
+            /* Stop listening to the necesary events. */
+
+            viewPort.eventHandler.stopListening("Offset Changed", onOffsetChanged);
+            fileSequence.eventHandler.stopListening("Files Updated", onFilesUpdated);
+            thisObject.container.eventHandler.stopListening('Dimmensions Changed')
+
+            /* Destroyd References */
+
+            datetime = undefined;
+            timePeriod = undefined;
+
+            fileSequence = undefined;
+
+        } catch (err) {
+
+            if (ERROR_LOG === true) { logger.write("[ERROR] finalize -> err = " + err.stack); }
+        }
+    }
 
     function initialize(pCompetition, pStorage, pDatetime, pTimePeriod, callBackFunction) {
 
@@ -103,11 +126,19 @@
 
             }
 
+            thisObject.container.eventHandler.listenToEvent('Dimmensions Changed', function () {
+                recalculateScale()
+                recalculate();
+            })
+
+            recalculate();
+            recalculateScale();
+
             callBackFunction(GLOBAL.DEFAULT_OK_RESPONSE);
 
         } catch (err) {
 
-            if (ERROR_LOG === true) { logger.write("[ERROR] initialize -> err.message = " + err.message); }
+            if (ERROR_LOG === true) { logger.write("[ERROR] initialize -> err = " + err.stack); }
 
         }
     }
@@ -122,9 +153,9 @@
 
             /* First we check if this point is inside this space. */
 
-            if (this.container.frame.isThisPointHere(point) === true) {
+            if (thisObject.container.frame.isThisPointHere(point) === true) {
 
-                return this.container;
+                return thisObject.container;
 
             } else {
 
@@ -135,7 +166,7 @@
 
         } catch (err) {
 
-            if (ERROR_LOG === true) { logger.write("[ERROR] getContainer -> err.message = " + err.message); }
+            if (ERROR_LOG === true) { logger.write("[ERROR] getContainer -> err = " + err.stack); }
 
         }
     }
@@ -156,7 +187,7 @@
 
         } catch (err) {
 
-            if (ERROR_LOG === true) { logger.write("[ERROR] onFilesUpdated -> err.message = " + err.message); }
+            if (ERROR_LOG === true) { logger.write("[ERROR] onFilesUpdated -> err = " + err.stack); }
 
         }
     }
@@ -173,7 +204,7 @@
 
         } catch (err) {
 
-            if (ERROR_LOG === true) { logger.write("[ERROR] setTimePeriod -> err.message = " + err.message); }
+            if (ERROR_LOG === true) { logger.write("[ERROR] setTimePeriod -> err = " + err.stack); }
 
         }
     }
@@ -188,7 +219,7 @@
 
         } catch (err) {
 
-            if (ERROR_LOG === true) { logger.write("[ERROR] setDatetime -> err.message = " + err.message); }
+            if (ERROR_LOG === true) { logger.write("[ERROR] setDatetime -> err = " + err.stack); }
 
         }
     }
@@ -205,7 +236,7 @@
 
         } catch (err) {
 
-            if (ERROR_LOG === true) { logger.write("[ERROR] draw -> err.message = " + err.message); }
+            if (ERROR_LOG === true) { logger.write("[ERROR] draw -> err = " + err.stack); }
 
         }
     }
@@ -223,7 +254,7 @@
 
         } catch (err) {
 
-            if (ERROR_LOG === true) { logger.write("[ERROR] onOffsetChanged -> err.message = " + err.message); }
+            if (ERROR_LOG === true) { logger.write("[ERROR] onOffsetChanged -> err = " + err.stack); }
 
         }
     }
@@ -333,7 +364,7 @@
 
         } catch (err) {
 
-            if (ERROR_LOG === true) { logger.write("[ERROR] recalculate -> err.message = " + err.message); }
+            if (ERROR_LOG === true) { logger.write("[ERROR] recalculate -> err = " + err.stack); }
 
         }
     }
@@ -368,7 +399,7 @@
 
         } catch (err) {
 
-            if (ERROR_LOG === true) { logger.write("[ERROR] recalculateScale -> err.message = " + err.message); }
+            if (ERROR_LOG === true) { logger.write("[ERROR] recalculateScale -> err = " + err.stack); }
 
         }
     }
@@ -493,7 +524,7 @@
 
         } catch (err) {
 
-            if (ERROR_LOG === true) { logger.write("[ERROR] plotStartFinishLines -> err.message = " + err.message); }
+            if (ERROR_LOG === true) { logger.write("[ERROR] plotStartFinishLines -> err = " + err.stack); }
 
         }
     }
@@ -502,7 +533,8 @@
 
         try {
 
-            if (INTENSIVE_LOG === true) { logger.write("[INFO] plotChart -> Entering function."); }
+            let userPosition = getUserPosition()
+            let userPositionDate = userPosition.point.x
 
             for (let k = 0; k < competition.participants.length; k++) {
 
@@ -544,13 +576,10 @@
 
                         let isCurrentRecord = false;
 
-                        if (datetime !== undefined) {
-                            let dateValue = datetime.valueOf();
-                            if (dateValue >= record.date - timePeriod / 2 && dateValue <= record.date + timePeriod / 2 - 1) {
-                                isCurrentRecord = true;
-                            }
+                        if (userPositionDate >= record.date - timePeriod / 2 && userPositionDate <= record.date + timePeriod / 2 - 1) {
+                            isCurrentRecord = true;
                         }
-
+  
                         let opacity = '0.2';
 
                         let radius = 2;
@@ -690,7 +719,7 @@
 
         } catch (err) {
 
-            if (ERROR_LOG === true) { logger.write("[ERROR] plotChart -> err.message = " + err.message); }
+            if (ERROR_LOG === true) { logger.write("[ERROR] plotChart -> err = " + err.stack); }
 
         }
     }
