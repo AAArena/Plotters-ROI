@@ -41,6 +41,10 @@
 
     let fileStyles = [];
 
+    let offsetChangedEventSubscriptionId
+    let filesUpdatedEventSubscriptionId
+    let dimmensionsChangedEventSubscriptionId
+
     return thisObject;
 
     function finalize() {
@@ -50,9 +54,9 @@
 
             /* Stop listening to the necesary events. */
 
-            viewPort.eventHandler.stopListening("Offset Changed", onOffsetChanged);
-            fileSequence.eventHandler.stopListening("Files Updated", onFilesUpdated);
-            thisObject.container.eventHandler.stopListening('Dimmensions Changed')
+            viewPort.eventHandler.stopListening(offsetChangedEventSubscriptionId);
+            fileSequence.eventHandler.stopListening(filesUpdatedEventSubscriptionId);
+            thisObject.container.eventHandler.stopListening(dimmensionsChangedEventSubscriptionId)
 
             /* Destroyd References */
 
@@ -82,7 +86,7 @@
             recalculate();
             recalculateScale();
 
-            viewPort.eventHandler.listenToEvent("Offset Changed", onOffsetChanged);
+            offsetChangedEventSubscriptionId = viewPort.eventHandler.listenToEvent("Offset Changed", onOffsetChanged);
 
             /* Create the Payload structure */
 
@@ -108,7 +112,7 @@
 
                     let fileSequence = competitorsSequences[0][k];  // Only the first dataSet is considered for now.
 
-                    fileSequence.eventHandler.listenToEvent("Files Updated", onFilesUpdated); // Only the first sequence is supported right now.
+                    filesUpdatedEventSubscriptionId = fileSequence.eventHandler.listenToEvent("Files Updated", onFilesUpdated); // Only the first sequence is supported right now.
               
             }
 
@@ -126,7 +130,7 @@
 
             }
 
-            thisObject.container.eventHandler.listenToEvent('Dimmensions Changed', function () {
+            dimmensionsChangedEventSubscriptionId = thisObject.container.eventHandler.listenToEvent('Dimmensions Changed', function () {
                 recalculateScale()
                 recalculate();
             })
