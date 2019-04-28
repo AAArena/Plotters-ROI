@@ -1,7 +1,6 @@
 ﻿function newAAArenaPlottersROICombinedProfits() {
 
     const MODULE_NAME = "AAArena Plotters ROI Combined Profits";
-    const INFO_LOG = false;
     const ERROR_LOG = true;
     const INTENSIVE_LOG = false;
     const logger = newWebDebugLog();
@@ -50,8 +49,6 @@
     function finalize() {
         try {
 
-            if (INFO_LOG === true) { logger.write("[INFO] finalize -> Entering function."); }
-
             /* Stop listening to the necesary events. */
 
             viewPort.eventHandler.stopListening(offsetChangedEventSubscriptionId);
@@ -74,8 +71,6 @@
     function initialize(pCompetition, pStorage, pDatetime, pTimePeriod, callBackFunction) {
 
         try {
-
-            if (INFO_LOG === true) { logger.write("[INFO] initialize -> Entering function."); }
 
             competition = pCompetition;
             competitorsSequences = pStorage.competitorsSequences;
@@ -151,8 +146,6 @@
 
         try {
 
-            if (INFO_LOG === true) { logger.write("[INFO] getContainer -> Entering function."); }
-
             let container;
 
             /* First we check if this point is inside this space. */
@@ -179,8 +172,6 @@
 
         try {
 
-            if (INFO_LOG === true) { logger.write("[INFO] onFilesUpdated -> Entering function."); }
-
             updatedFilesEventsReceived++;
 
             if (updatedFilesEventsReceived === competition.participants.length) {
@@ -200,8 +191,6 @@
 
         try {
 
-            if (INFO_LOG === true) { logger.write("[INFO] setTimePeriod -> Entering function."); }
-
             timePeriod = pTimePeriod;
 
             recalculate();
@@ -216,8 +205,6 @@
     function setDatetime(newDatetime) {
 
         try {
-
-            if (INFO_LOG === true) { logger.write("[INFO] setDatetime -> Entering function."); }
 
             datetime = newDatetime;
 
@@ -249,8 +236,6 @@
 
         try {
 
-            if (INFO_LOG === true) { logger.write("[INFO] onOffsetChanged -> Entering function."); }
-
             if (Math.random() * 100 > 95) {
 
                 recalculate()
@@ -266,8 +251,6 @@
     function recalculate() {
 
         try {
-
-            if (INFO_LOG === true) { logger.write("[INFO] recalculate -> Entering function."); }
 
             if (competitorsSequences === undefined) { return; }
 
@@ -377,8 +360,6 @@
 
         try {
 
-            if (INFO_LOG === true) { logger.write("[INFO] recalculateScale -> Entering function."); }
-
             if (competitorsSequences === undefined) { return; } // We need the market file to be loaded to make the calculation.
 
             if (timeLineCoordinateSystem.maxValue > 0) { return; } // Already calculated.
@@ -411,8 +392,6 @@
     function plotStartFinishLines() {
 
         try {
-
-            if (INFO_LOG === true) { logger.write("[INFO] plotStartFinishLines -> Entering function."); }
 
             let startDatetime = new Date(competition.startDatetime);
             let finishDatetime = new Date(competition.finishDatetime);
